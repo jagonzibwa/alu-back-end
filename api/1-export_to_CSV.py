@@ -1,24 +1,33 @@
 #!/usr/bin/python3
-"""Records all tasks that are owned by this employee
 """
-import csv
+Using a REST API and an EMP_ID, save info about their TODO list in a csv file
+"""
 import requests
 import sys
 
 
 if __name__ == "__main__":
-    csv_f = '{}.csv'.format(sys.argv[1])
-    name_url = 'https://jsonplaceholder.typicode.com/users/{}'.format(
-        sys.argv[1])
-    todo_url = "https://jsonplaceholder.typicode.com/todos?userId={}".format(
-        sys.argv[1])
-    todo = requests.get(todo_url).json()
+    """ main section """
+    EMP_ID = sys.argv[1]
+    BASE_URL = 'https://jsonplaceholder.typicode.com'
+    employee = requests.get(
+        BASE_URL + f'/users/{EMP_ID}/').json()
+    EMPLOYEE_NAME = employee.get("username")
+    employee_todos = requests.get(
+        BASE_URL + f'/users/{EMP_ID}/todos').json()
+    serialized_todos = {}
 
-    with open(csv_f, 'w', newline='') as f:
-        write = csv.writer(f)
-        for t in todo:
-            if t['userId'] == int(sys.argv[1]):
-                name = requests.get(name_url).json()
-                line = [str(t['userId']), name['username'], 
-                        str(t['completed']), t['title']]
-                write.writerow(line)
+    for todo in employee_todos:
+        serialized_todos.update({todo.get("title"): todo.get("completed")})
+
+    COMPLETED_LEN = len([k for k, v in serialized_todos.items() if v is True])
+    with open(str(EMP_ID) + '.csv', "w") as f:
+        [
+            f.write(
+                '"' + str(sys.argv[1]) + '",' +
+                '"' + EMPLOYEE_NAME + '",' +
+                '"' + str(todo["completed"]) + '",' +
+                '"' + todo["title"] + '",' + "\n"
+            )
+            for todo in employee_todos
+        ]

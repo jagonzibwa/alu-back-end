@@ -1,22 +1,27 @@
 #!/usr/bin/python3
-"""Given employee ID, returns information about TODO list progress
+"""
+Using a REST API, and a given emp_ID, return info about their TODO list.
 """
 import requests
 import sys
 
 
 if __name__ == "__main__":
-    _id = sys.argv[1]
-    name_url = 'https://jsonplaceholder.typicode.com/users/{}'.format(_id)
-    name = requests.get(name_url).json().get('name')
-    todo_url = "https://jsonplaceholder.typicode.com/todos?userId={}".format(
-        _id)
-    todo = requests.get(todo_url)
+    """ main section """
+    BASE_URL = 'https://jsonplaceholder.typicode.com'
+    employee = requests.get(
+        BASE_URL + f'/users/{sys.argv[1]}/').json()
+    EMPLOYEE_NAME = employee.get("name")
+    employee_todos = requests.get(
+        BASE_URL + f'/users/{sys.argv[1]}/todos').json()
+    serialized_todos = {}
 
-    all_tasks = [task for task in todo.json()]
-    completed = [task for task in todo.json() if task.get('completed') is True]
+    for todo in employee_todos:
+        serialized_todos.update({todo.get("title"): todo.get("completed")})
 
-    print("Employee {} is done with tasks({}/{}):"
-          .format(name, len(completed), len(all_tasks)))
-    for task in completed:
-        print("\t {}".format(task.get('title')))
+    COMPLETED_LEN = len([k for k, v in serialized_todos.items() if v is True])
+    print("Employee {} is done with tasks({}/{}):".format(
+        EMPLOYEE_NAME, COMPLETED_LEN, len(serialized_todos)))
+    for key, val in serialized_todos.items():
+        if val is True:
+            print("\t {}".format(key))
