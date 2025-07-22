@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """Records all tasks that are owned by this employee
 """
+import csv
 import requests
 import sys
 
@@ -16,8 +17,8 @@ if __name__ == "__main__":
     with open(csv_f, 'w', newline='') as f:
         write = csv.writer(f)
         for t in todo:
-            if t['userId'] == sys.argv[1]:
+            if t['userId'] == int(sys.argv[1]):
                 name = requests.get(name_url).json()
-                line = '"' + str(t['userId']) + '","' + name[0]['username'] +
-                '","' + str(t['completed']) + '","' + t['title'] + '"'
+                line = [str(t['userId']), name['username'], 
+                        str(t['completed']), t['title']]
                 write.writerow(line)
